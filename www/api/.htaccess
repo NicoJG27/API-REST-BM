@@ -1,0 +1,10 @@
+RewriteEngine On
+
+# Login
+RewriteRule ^login/?$ login.php [L,QSA]
+
+# Lista de platos
+RewriteRule ^platos/?$ platos.php [L,QSA]
+
+# Detalle de un platos por id
+RewriteRule ^platos/([0-9]+)/?$ platos.php?id=$1 [L,QSA]
