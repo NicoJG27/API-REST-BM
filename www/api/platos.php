@@ -24,7 +24,7 @@ switch ($metodo) {
         $pagina = isset($_GET['page']) ? (int) $_GET['page'] : 1;
         $limite = isset($_GET['limit']) ? (int) $_GET['limit'] : 10;
         $busqueda = isset($_GET['search']) ? $_GET['search'] : null;
-        $orden = isset($_GET['orden']) ? $_GET['orden'] : 'id_plato';
+        $orden = isset($_GET['order']) ? $_GET['order'] : 'id_plato';
         $dir = isset($_GET['dir']) ? $_GET['dir'] : 'ASC';
         if ($id) {
             if ($esDetallado) {
