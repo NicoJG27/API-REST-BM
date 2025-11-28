@@ -23,6 +23,9 @@ switch ($metodo) {
     case 'GET':
         $pagina = isset($_GET['page']) ? (int) $_GET['page'] : 1;
         $limite = isset($_GET['limit']) ? (int) $_GET['limit'] : 10;
+        $busqueda = isset($_GET['search']) ? $_GET['search'] : null;
+        $orden = isset($_GET['orden']) ? $_GET['orden'] : 'id_plato';
+        $dir = isset($_GET['dir']) ? $_GET['dir'] : 'ASC';
         if ($id) {
             if ($esDetallado) {
                 echo json_encode($controlador->verDetallado($id));
@@ -30,7 +33,7 @@ switch ($metodo) {
                 echo json_encode($controlador->ver($id));
             }
         } else {
-            echo json_encode($controlador->listar($pagina, $limite));
+            echo json_encode($controlador->listar($pagina, $limite,$busqueda, $orden, $dir));
         }
         break;
 
