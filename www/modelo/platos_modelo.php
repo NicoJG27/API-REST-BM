@@ -13,17 +13,19 @@ class PlatosModelo
      *
      * @return array Lista de platos.
      */
-    public function obtenerTodos(): array
+    public function obtenerTodos(int $pagina = 1, int $limite = 10): array
+
     {
-        // sin LIMIT
+        $offset = ($pagina - 1) * $limite;
         $sql = "SELECT id_plato, nombre, precio, descripcion, imagen, id_categoria 
-                FROM Platos";
-        
+                FROM Platos
+                LIMIT :limite OFFSET :offset";
+
         $stmt = $this->db->prepare($sql);
-        $stmt->setFetchMode(PDO::FETCH_ASSOC);
+        $stmt->bindValue(':limite', $limite, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
-        
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -80,7 +82,6 @@ class PlatosModelo
                 return null; // No hubo cambios o no existe el ID
             }
             return true;
-
         } catch (PDOException $e) {
             return false;
         }
@@ -101,7 +102,7 @@ class PlatosModelo
             $filas = $stmt->rowCount();
 
             if ($filas === 0) {
-                return null; 
+                return null;
             }
 
             return true;
@@ -154,4 +155,3 @@ class PlatosModelo
         return $plato;
     }
 }
-?>
