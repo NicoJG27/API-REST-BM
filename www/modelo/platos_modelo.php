@@ -9,21 +9,41 @@ class PlatosModelo
     }
 
     /**
-     * Obtener todos los platos.
+     * Obtener todos los platos.  Añadido parametros de busqueda y paginacion
      *
      * @return array Lista de platos.
      */
-    public function obtenerTodos(int $pagina = 1, int $limite = 10): array
-
+    public function obtenerTodos(int $pagina = 1, int $limite = 10, ?string $busqueda = null, string $orden = 'id_plato', string $direccion = 'ASC'): array
     {
         $offset = ($pagina - 1) * $limite;
+
         $sql = "SELECT id_plato, nombre, precio, descripcion, imagen, id_categoria 
-                FROM Platos
-                LIMIT :limite OFFSET :offset";
+                FROM Platos 
+                WHERE 1=1";
+
+        if ($busqueda) {
+            $sql .= " AND (nombre LIKE :busqueda OR descripcion LIKE :busqueda)";
+        }
+
+        $camposValidos = ['id_plato', 'nombre', 'precio'];
+        $orden = in_array($orden, $camposValidos) ? $orden : 'id_plato';
+        $direccion = strtoupper($direccion) === 'DESC' ? 'DESC' : 'ASC';
+
+        $sql .= " ORDER BY $orden $direccion";
+        $sql .= " LIMIT :limite OFFSET :offset";
 
         $stmt = $this->db->prepare($sql);
+
+
         $stmt->bindValue(':limite', $limite, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+
+        if ($busqueda) {
+            $termino = "%" . $busqueda . "%";
+
+            $stmt->bindParam(':busqueda', $termino);
+        }
+
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
