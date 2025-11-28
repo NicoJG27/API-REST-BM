@@ -9,11 +9,11 @@ class PlatosControlador
     }
 
     // GET /api/platos
-    public function listar(int $pagina, int $limite): array
+    public function listar(int $pagina, int $limite, ?string $busqueda, string $orden, string $dir): array
     {
         // Aquí solo delegamos en el modelo.
         // Por defecto, código HTTP 200 OK.
-        return $this->modelo->obtenerTodos($pagina, $limite);
+        return $this->modelo->obtenerTodos($pagina, $limite, $busqueda, $orden, $dir);
     }
 
     // POST /api/platos
@@ -94,8 +94,8 @@ class PlatosControlador
 
         if ($eliminado === true) {
             // Eliminado correctamente
-            http_response_code(200); 
-            return ["mensaje" => "Plato eliminado correctamente"]; 
+            http_response_code(200);
+            return ["mensaje" => "Plato eliminado correctamente"];
         }
 
         if ($eliminado === null) {
@@ -151,4 +151,3 @@ class PlatosControlador
         return $plato;
     }
 }
-?>
