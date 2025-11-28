@@ -9,11 +9,11 @@ class PlatosControlador
     }
 
     // GET /api/platos
-    public function listar(): array
+    public function listar(int $pagina, int $limite): array
     {
         // Aquí solo delegamos en el modelo.
         // Por defecto, código HTTP 200 OK.
-        return $this->modelo->obtenerTodos();
+        return $this->modelo->obtenerTodos($pagina, $limite);
     }
 
     // POST /api/platos
