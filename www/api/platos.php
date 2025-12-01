@@ -3,11 +3,19 @@
 header("Content-Type: application/json; charset=utf-8");
 
 require_once __DIR__ . "/../vendor/autoload.php";
+<<<<<<< HEAD
 require_once __DIR__ . "/../config.php";   // Asegúrate de que config.php está en la carpeta superior
 require_once __DIR__ . "/../database.php"; // Asegúrate de que database.php está en la carpeta superior
 
 // CORRECCIÓN 1: Nombres de archivo coincidiendo con lo que subiste (plurales)
 require_once __DIR__ . "/../modelo/platos_modelo.php"; 
+=======
+require_once __DIR__ . "/../config.php";
+require_once __DIR__ . "/../database.php";
+
+
+require_once __DIR__ . "/../modelo/platos_modelo.php";
+>>>>>>> e84775275b9ffeaedbd5a17afd3008d8a1a012f4
 require_once __DIR__ . "/../controlador/platos_controlador.php";
 require_once __DIR__ . "/auth.php";
 
