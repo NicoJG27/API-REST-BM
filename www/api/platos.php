@@ -2,11 +2,11 @@
 header("Content-Type: application/json; charset=utf-8");
 
 require_once __DIR__ . "/../vendor/autoload.php";
-require_once __DIR__ . "/../config.php";   // Asegúrate de que config.php está en la carpeta superior
-require_once __DIR__ . "/../database.php"; // Asegúrate de que database.php está en la carpeta superior
+require_once __DIR__ . "/../config.php";
+require_once __DIR__ . "/../database.php";
 
-// CORRECCIÓN 1: Nombres de archivo coincidiendo con lo que subiste (plurales)
-require_once __DIR__ . "/../modelo/platos_modelo.php"; 
+
+require_once __DIR__ . "/../modelo/platos_modelo.php";
 require_once __DIR__ . "/../controlador/platos_controlador.php";
 require_once __DIR__ . "/auth.php";
 
@@ -22,33 +22,38 @@ $esDetallado = isset($_GET['detallado']);
 // CORRECCIÓN 2: El switch que faltaba para manejar la lógica
 switch ($metodo) {
     case 'GET':
+        $pagina = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+        $limite = isset($_GET['limit']) ? (int) $_GET['limit'] : 10;
+        $busqueda = isset($_GET['search']) ? $_GET['search'] : null;
+        $orden = isset($_GET['orden']) ? $_GET['orden'] : 'id_plato';
+        $dir = isset($_GET['dir']) ? $_GET['dir'] : 'ASC';
         if ($id) {
             if ($esDetallado) {
-                 echo json_encode($controlador->verDetallado($id));
+                echo json_encode($controlador->verDetallado($id));
             } else {
-                 echo json_encode($controlador->ver($id));
+                echo json_encode($controlador->ver($id));
             }
         } else {
-            echo json_encode($controlador->listar());
+            echo json_encode($controlador->listar($pagina, $limite,$busqueda, $orden, $dir));
         }
         break;
 
     case 'POST':
         $user = requireAuth();
-        
+
         $datos = json_decode(file_get_contents("php://input"), true) ?? [];
         echo json_encode($controlador->crear($datos));
         break;
 
     case 'PUT':
-        $user = requireAuth(); 
+        $user = requireAuth();
 
         $datos = json_decode(file_get_contents("php://input"), true) ?? [];
         echo json_encode($controlador->actualizar($id, $datos));
         break;
 
     case 'DELETE':
-        $user = requireAuth(); 
+        $user = requireAuth();
 
         echo json_encode($controlador->eliminar($id));
         break;
@@ -58,4 +63,3 @@ switch ($metodo) {
         echo json_encode(["error" => "Método no permitido"]);
         break;
 }
-?>
