@@ -19,6 +19,7 @@ $metodo = $_SERVER['REQUEST_METHOD'];
 $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 $esDetallado = isset($_GET['detallado']);
 
+// CORRECCIÓN 2: El switch que faltaba para manejar la lógica
 switch ($metodo) {
     case 'GET':
         $pagina = isset($_GET['page']) ? (int) $_GET['page'] : 1;
