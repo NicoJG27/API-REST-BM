@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tester API REST BM v2</title>
+    <style>
+        :root { --primary: #2563eb; --bg: #f8fafc; --panel: #ffffff; --text: #1e293b; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; max-width: 1000px; margin: 0 auto; }
+        h1, h2 { color: #0f172a; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: var(--panel); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input, select, textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
+        button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #64748b; }
+        #response-area { background: #1e293b; color: #10b981; padding: 15px; border-radius: 6px; font-family: monospace; white-space: pre-wrap; min-height: 200px; overflow-x: auto; }
+        .error { color: #ef4444 !important; }
+        .hidden { display: none; }
+        .row { display: flex; gap: 10px; }
+        label { font-weight: 600; font-size: 0.9em; display: block; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+
+    <h1>🍔 API Tester - Burguer Marina (Final)</h1>
+
+    <div class="card" id="auth-panel">
+        <h2>1. Autenticación</h2>
+        <div id="login-form">
+            <div class="row">
+                <div style="flex:1"><label>Email</label><input type="email" id="email" value="admin@test.com"></div>
+                <div style="flex:1"><label>Password</label><input type="password" id="password" value="1234"></div>
+            </div>
+            <button onclick="login()">🔑 Iniciar Sesión</button>
+        </div>
+        <div id="user-info" class="hidden">
+            <p>Conectado como: <strong id="user-email-display"></strong> | Rol: <span id="user-role-display"></span></p>
+            <textarea id="jwt-token" rows="2" readonly style="font-size: 0.8em; color: #666;"></textarea>
+            <button class="secondary" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h2>2. Configurar Petición</h2>
+            <label>Método HTTP</label>
+            <select id="method" onchange="updateUI()">
+                <option value="GET">GET (Listar/Ver)</option>
+                <option value="POST">POST (Crear)</option>
+                <option value="PUT">PUT (Actualizar)</option>
+                <option value="DELETE">DELETE (Borrar)</option>
+            </select>
+
+            <label>Endpoint (URL)</label>
+            <div class="row">
+                <input type="text" id="url" value="platos.php" style="flex: 2;">
+                <div style="flex: 1;">
+                    <input type="number" id="resource-id" placeholder="ID (Opcional)">
+                </div>
+            </div>
+
+            <div id="body-section" class="hidden">
+                <label>JSON Body</label>
+                <textarea id="json-body" rows="8">{
+    "nombre": "Test Burger",
+    "precio": 9.99,
+    "id_categoria": 1
+}</textarea>
+            </div>
+
+            <button onclick="sendRequest()" style="width: 100%; margin-top: 10px;">🚀 Enviar Petición</button>
+        </div>
+
+        <div class="card">
+            <h2>3. Respuesta</h2>
+            <div id="status-line">Estado: <span id="http-status">-</span></div>
+            <pre id="response-area">Esperando...</pre>
+        </div>
+    </div>
+
+    <script>
+        // LOGIN
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            try {
+                const res = await fetch('login.php', { method: 'POST', body: JSON.stringify({ email, password }) });
+                const data = await res.json();
+                if (res.ok) {
+                    localStorage.setItem('bm_token', data.token);
+                    localStorage.setItem('bm_user', email);
+                    try {
+                        const payload = JSON.parse(atob(data.token.split('.')[1]));
+                        localStorage.setItem('bm_role', payload.rol);
+                        showUserUI(email, payload.rol, data.token);
+                    } catch(e) { showUserUI(email, '?', data.token); }
+                } else { alert('Error Login: ' + (data.error || 'Desconocido')); }
+            } catch (err) { console.error(err); alert('Error red'); }
+        }
+
+        function logout() {
+            localStorage.clear();
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('user-info').classList.add('hidden');
+        }
+
+        function showUserUI(email, role, token) {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('user-info').classList.remove('hidden');
+            document.getElementById('user-email-display').innerText = email;
+            document.getElementById('user-role-display').innerText = role;
+            document.getElementById('jwt-token').value = token;
+        }
+
+        // PETICIONES
+        function updateUI() {
+            const method = document.getElementById('method').value;
+            document.getElementById('body-section').classList.toggle('hidden', method === 'GET' || method === 'DELETE');
+        }
+
+        async function sendRequest() {
+            const method = document.getElementById('method').value;
+            const id = document.getElementById('resource-id').value;
+            const jsonBody = document.getElementById('json-body').value;
+            const token = localStorage.getItem('bm_token');
+            const responseArea = document.getElementById('response-area');
+            
+            let url = document.getElementById('url').value; 
+            if (id) {
+                url += (url.includes('?') ? '&' : '?') + `id=${id}`;
+            }
+
+            const options = { method: method, headers: { 'Content-Type': 'application/json' } };
+            if (token) options.headers['Authorization'] = `Bearer ${token}`;
+            if (method === 'POST' || method === 'PUT') options.body = jsonBody;
+
+            responseArea.innerText = "Cargando...";
+            try {
+                const res = await fetch(url, options);
+                const status = res.status;
+                document.getElementById('http-status').innerText = `${status} ${res.statusText}`;
+                
+                let data;
+                try { data = await res.json(); } catch { data = { error: "No es JSON válido" }; }
+                
+                responseArea.innerText = JSON.stringify(data, null, 4);
+                responseArea.className = (status >= 200 && status < 300) ? "" : "error";
+            } catch (err) {
+                responseArea.innerText = "Error de conexión: " + err;
+            }
+        }
+
+        window.onload = () => {
+            if (localStorage.getItem('bm_token')) {
+                showUserUI(localStorage.getItem('bm_user'), localStorage.getItem('bm_role'), localStorage.getItem('bm_token'));
+            }
+            updateUI();
+        };
+    </script>
+</body>
+</html>

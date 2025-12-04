@@ -1,16 +1,16 @@
 <?php
-// ... (Tus require_once anteriores se mantienen igual) ...
 header("Content-Type: application/json; charset=utf-8");
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Headers: Authorization, Content-Type");
 
 require_once __DIR__ . "/../vendor/autoload.php";
-require_once __DIR__ . "/../config.php";   // Asegúrate de que config.php está en la carpeta superior
-require_once __DIR__ . "/../database.php"; // Asegúrate de que database.php está en la carpeta superior
-
-// CORRECCIÓN 1: Nombres de archivo coincidiendo con lo que subiste (plurales)
-require_once __DIR__ . "/../modelo/platos_modelo.php"; 
+require_once __DIR__ . "/../config.php";
+require_once __DIR__ . "/../database.php";
+require_once __DIR__ . "/../modelo/platos_modelo.php";
 require_once __DIR__ . "/../controlador/platos_controlador.php";
 require_once __DIR__ . "/auth.php";
 
+// Inicializamos
 $db = Database::getConnection();
 $modelo = new PlatosModelo($db);
 $controlador = new PlatosControlador($modelo);
@@ -19,10 +19,9 @@ $metodo = $_SERVER['REQUEST_METHOD'];
 $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 $esDetallado = isset($_GET['detallado']);
 
-// CORRECCIÓN 2: El switch que faltaba para manejar la lógica
 switch ($metodo) {
     case 'GET':
-        // PÚBLICO: Cualquiera puede ver los platos
+        // PÚBLICO
         $pagina = isset($_GET['page']) ? (int) $_GET['page'] : 1;
         $limite = isset($_GET['limit']) ? (int) $_GET['limit'] : 10;
         $busqueda = isset($_GET['search']) ? $_GET['search'] : null;
@@ -41,13 +40,13 @@ switch ($metodo) {
         break;
 
     case 'POST':
-        // AUTENTICADO: Admin o Usuario
-        $user = requireAuth(); // Si falla, se corta aquí y devuelve 401
-
-        // Verificamos el rol
-        if ($user->rol !== 'administrador' && $user->rol !== 'usuario') {
-            http_response_code(403); // Forbidden (Prohibido)
-            echo json_encode(["error" => "No tienes permisos para crear platos. Rol necesario: usuario o administrador."]);
+        // AUTENTICADO: admin o user
+        $user = requireAuth(); 
+        
+        // Verificamos roles exactos de tu BD
+        if ($user->rol !== 'admin' && $user->rol !== 'user') {
+            http_response_code(403); 
+            echo json_encode(["error" => "No tienes permisos. Rol necesario: user o admin."]);
             exit;
         }
 
@@ -59,9 +58,9 @@ switch ($metodo) {
         // SOLO ADMIN
         $user = requireAuth();
 
-        if ($user->rol !== 'administrador') {
+        if ($user->rol !== 'admin') {
             http_response_code(403);
-            echo json_encode(["error" => "Acceso denegado. Solo los administradores pueden editar."]);
+            echo json_encode(["error" => "Acceso denegado. Solo admin puede editar."]);
             exit;
         }
 
@@ -73,13 +72,18 @@ switch ($metodo) {
         // SOLO ADMIN
         $user = requireAuth();
 
-        if ($user->rol !== 'administrador') {
+        if ($user->rol !== 'admin') {
             http_response_code(403);
-            echo json_encode(["error" => "Acceso denegado. Solo los administradores pueden eliminar."]);
+            echo json_encode(["error" => "Acceso denegado. Solo admin puede eliminar."]);
             exit;
         }
 
         echo json_encode($controlador->eliminar($id));
+        break;
+
+    case 'OPTIONS':
+        // Para evitar problemas de CORS en navegadores
+        http_response_code(200);
         break;
 
     default:
