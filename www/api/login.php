@@ -1,4 +1,20 @@
 <?php
+// www/api/platos.php
+use OpenApi\Annotations as OA;
+
+/**
+ * @OA\Get(
+ * path="/platos",
+ * tags={"Platos"},
+ * summary="Listar platos",
+ * @OA\Response(
+ * response=200,
+ * description="Lista de platos recuperada con éxito"
+ * )
+ * )
+ */
+$endpoint_platos = true; // Variable "cebo" para que Swagger lea el comentario de arriba
+
 header("Content-Type: application/json; charset=utf-8");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type");
@@ -32,7 +48,7 @@ try {
     $db = Database::getConnection();
 
     // 4. Buscar usuario
-    $sql = "SELECT id_usuario, nombre, email, password, rol FROM Usuarios WHERE email = :email LIMIT 1";
+    $sql = "SELECT id_usuario, nombre, email, password, rol FROM suarios WHERE email = :email LIMIT 1";
     $stmt = $db->prepare($sql);
     $stmt->bindParam(":email", $email);
     $stmt->execute();
