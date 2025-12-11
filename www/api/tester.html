@@ -3,159 +3,390 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tester API REST BM v2</title>
+    <title>Tester API BM - Completo (Local)</title>
     <style>
-        :root { --primary: #2563eb; --bg: #f8fafc; --panel: #ffffff; --text: #1e293b; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; max-width: 1000px; margin: 0 auto; }
-        h1, h2 { color: #0f172a; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: var(--panel); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        input, select, textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
-        button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        button:hover { opacity: 0.9; }
-        button.secondary { background: #64748b; }
-        #response-area { background: #1e293b; color: #10b981; padding: 15px; border-radius: 6px; font-family: monospace; white-space: pre-wrap; min-height: 200px; overflow-x: auto; }
-        .error { color: #ef4444 !important; }
+        :root { --primary: #3b82f6; --bg: #f1f5f9; --card: #ffffff; --text: #1e293b; --success: #10b981; --danger: #ef4444; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; max-width: 1100px; margin: 0 auto; }
+        
+        /* Layout */
+        .grid-main { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+        .card { background: var(--card); padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        
+        /* Inputs & Buttons */
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
+        label { font-weight: 600; font-size: 0.85em; color: #64748b; margin-bottom: 5px; display: block; margin-top: 10px; }
+        
+        button { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.2s; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        button.secondary { background: #94a3b8; }
+        button.danger { background: var(--danger); }
+        
+        /* Response Area */
+        #url-preview { background: #334155; color: #fff; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 0.9em; word-break: break-all; margin-bottom: 10px; }
+        #response-area { background: #0f172a; color: #10b981; padding: 15px; border-radius: 6px; font-family: 'Consolas', monospace; white-space: pre-wrap; height: 500px; overflow: auto; font-size: 0.9em; }
+        
+        /* Utilities */
         .hidden { display: none; }
         .row { display: flex; gap: 10px; }
-        label { font-weight: 600; font-size: 0.9em; display: block; margin-bottom: 4px; }
+        .col { flex: 1; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75em; font-weight: bold; }
+        
+        /* Auth Status */
+        .auth-status { padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 0.9em; }
+        .logged-in { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .logged-out { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
     </style>
 </head>
 <body>
 
-    <h1>🍔 API Tester - Burguer Marina (Final)</h1>
+    <h1>🍔 Burguer Marina API Tester <small style="font-size:0.5em; color:#64748b">v3.1 (Rutas Planas)</small></h1>
 
-    <div class="card" id="auth-panel">
-        <h2>1. Autenticación</h2>
-        <div id="login-form">
-            <div class="row">
-                <div style="flex:1"><label>Email</label><input type="email" id="email" value="admin@test.com"></div>
-                <div style="flex:1"><label>Password</label><input type="password" id="password" value="1234"></div>
-            </div>
-            <button onclick="login()">🔑 Iniciar Sesión</button>
-        </div>
-        <div id="user-info" class="hidden">
-            <p>Conectado como: <strong id="user-email-display"></strong> | Rol: <span id="user-role-display"></span></p>
-            <textarea id="jwt-token" rows="2" readonly style="font-size: 0.8em; color: #666;"></textarea>
-            <button class="secondary" onclick="logout()">Cerrar Sesión</button>
-        </div>
-    </div>
+    <div class="grid-main">
+        
+        <div class="left-col">
+            
+            <div class="card">
+                <h3>🔐 Autenticación</h3>
+                <div id="login-form">
+                    <label>Email</label>
+                    <input type="email" id="email" value="admin@test.com">
+                    <label>Password</label>
+                    <input type="password" id="password" value="1234">
+                    <button onclick="login()">Iniciar Sesión</button>
+                </div>
 
-    <div class="grid">
-        <div class="card">
-            <h2>2. Configurar Petición</h2>
-            <label>Método HTTP</label>
-            <select id="method" onchange="updateUI()">
-                <option value="GET">GET (Listar/Ver)</option>
-                <option value="POST">POST (Crear)</option>
-                <option value="PUT">PUT (Actualizar)</option>
-                <option value="DELETE">DELETE (Borrar)</option>
-            </select>
-
-            <label>Endpoint (URL)</label>
-            <div class="row">
-                <input type="text" id="url" value="platos.php" style="flex: 2;">
-                <div style="flex: 1;">
-                    <input type="number" id="resource-id" placeholder="ID (Opcional)">
+                <div id="user-info" class="hidden">
+                    <div class="auth-status logged-in">
+                        👤 <b><span id="user-role-display"></span></b><br>
+                        <small id="user-email-display"></small>
+                    </div>
+                    <label>Token (JWT)</label>
+                    <textarea id="jwt-token" rows="2" readonly style="font-size: 0.7em; background:#f8fafc"></textarea>
+                    <button class="secondary" onclick="logout()">Cerrar Sesión</button>
                 </div>
             </div>
 
-            <div id="body-section" class="hidden">
-                <label>JSON Body</label>
-                <textarea id="json-body" rows="8">{
-    "nombre": "Test Burger",
-    "precio": 9.99,
-    "id_categoria": 1
-}</textarea>
-            </div>
+            <div class="card">
+                <h3>⚙️ Petición</h3>
+                
+                <label>Método</label>
+                <select id="method" onchange="updateUI()">
+                    <option value="GET">GET (Listar / Ver)</option>
+                    <option value="POST">POST (Crear)</option>
+                    <option value="PUT">PUT (Editar - Admin)</option>
+                    <option value="DELETE">DELETE (Borrar - Admin)</option>
+                </select>
 
-            <button onclick="sendRequest()" style="width: 100%; margin-top: 10px;">🚀 Enviar Petición</button>
+                <label>Ruta Archivo API</label>
+                <input type="text" id="base-url" value="platos.php" oninput="buildUrl()">
+
+                <label style="margin-top:15px">Acciones Rápidas</label>
+                <div class="row" style="gap:5px">
+                    <button class="secondary" style="width:auto; flex:1; padding:8px; margin:0; font-size:0.8em" onclick="quickAction('list')">Listar</button>
+                    <button class="secondary" style="width:auto; flex:1; padding:8px; margin:0; font-size:0.8em" onclick="quickAction('count')">Conteo</button>
+                    <button class="secondary" style="width:auto; flex:1; padding:8px; margin:0; font-size:0.8em" onclick="quickAction('me')">Mi perfil</button>
+                </div>
+
+                <div id="id-group">
+                    <label>ID del Plato <small>(Opcional en GET)</small></label>
+                    <input type="number" id="resource-id" placeholder="Ej: 1" oninput="buildUrl()">
+                    
+                    <div id="detallado-group" class="hidden" style="margin-top:5px">
+                         <input type="checkbox" id="detallado-check" onchange="buildUrl()" style="width:auto"> 
+                         <label style="display:inline">Ver Detallado</label>
+                    </div>
+                </div>
+
+                <div id="get-filters" class="">
+                    <hr style="border:0; border-top:1px solid #e2e8f0; margin: 15px 0;">
+                    <strong style="color:#64748b; font-size:0.9em">Filtros de Listado</strong>
+                    
+                    <label>Buscar (?search)</label>
+                    <input type="text" id="search" placeholder="Hamburguesa..." oninput="buildUrl()">
+                    
+                    <div class="row">
+                        <div class="col">
+                            <label>Página</label>
+                            <input type="number" id="page" value="1" min="1" oninput="buildUrl()">
+                        </div>
+                        <div class="col">
+                            <label>Límite</label>
+                            <input type="number" id="limit" value="5" min="1" oninput="buildUrl()">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <label>Ordenar por</label>
+                            <select id="order" onchange="buildUrl()">
+                                <option value="id_plato">ID</option>
+                                <option value="nombre">Nombre</option>
+                                <option value="precio">Precio</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label>Dirección</label>
+                            <select id="dir" onchange="buildUrl()">
+                                <option value="ASC">ASC</option>
+                                <option value="DESC">DESC</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="body-section" class="hidden">
+                    <hr style="border:0; border-top:1px solid #e2e8f0; margin: 15px 0;">
+                    <div class="row" style="align-items:center; justify-content:space-between">
+                        <label style="margin:0">JSON Body</label>
+                        <button class="secondary" style="width:auto; padding:2px 8px; margin:0; font-size:0.7em" onclick="fillTemplate()">Rellenar Plantilla</button>
+                    </div>
+                    <textarea id="json-body" rows="8"></textarea>
+                </div>
+
+                <button onclick="sendRequest()" id="send-btn" style="margin-top:20px; font-size: 1.1em">🚀 Enviar Petición</button>
+            </div>
         </div>
 
-        <div class="card">
-            <h2>3. Respuesta</h2>
-            <div id="status-line">Estado: <span id="http-status">-</span></div>
-            <pre id="response-area">Esperando...</pre>
+        <div class="right-col">
+            <div class="card" style="height: calc(100% - 40px);">
+                <h3>📡 Respuesta del Servidor</h3>
+                <div id="url-preview">GET platos.php?page=1...</div>
+                <div class="row" style="margin-bottom:10px; align-items:center">
+                    <span id="status-badge" class="badge" style="background:#eee; color:#666; font-size:1em">Status: -</span>
+                    <span id="time-badge" style="margin-left:auto; font-size:0.8em; color:#999">0 ms</span>
+                </div>
+                <div id="response-area">Esperando petición...</div>
+            </div>
         </div>
     </div>
 
     <script>
-        // LOGIN
+        // --- 1. LÓGICA DE AUTH ---
+        function checkAuth() {
+            const token = localStorage.getItem('bm_token');
+            if (token) {
+                const user = localStorage.getItem('bm_user');
+                const role = localStorage.getItem('bm_role');
+                
+                document.getElementById('login-form').classList.add('hidden');
+                document.getElementById('user-info').classList.remove('hidden');
+                document.getElementById('user-email-display').innerText = user || 'Usuario';
+                document.getElementById('user-role-display').innerText = role ? role.toUpperCase() : 'USER';
+                document.getElementById('jwt-token').value = token;
+            } else {
+                document.getElementById('login-form').classList.remove('hidden');
+                document.getElementById('user-info').classList.add('hidden');
+            }
+        }
+
         async function login() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            
             try {
-                const res = await fetch('login.php', { method: 'POST', body: JSON.stringify({ email, password }) });
-                const data = await res.json();
+                // CORREGIDO: Ruta directa 'login.php' (sin api/)
+                const res = await fetch('login.php', { 
+                    method: 'POST', 
+                    body: JSON.stringify({ email, password }),
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                let data;
+                try { data = await res.json(); } catch { data = { error: "Respuesta no es JSON" }; }
+                
                 if (res.ok) {
                     localStorage.setItem('bm_token', data.token);
-                    localStorage.setItem('bm_user', email);
-                    try {
-                        const payload = JSON.parse(atob(data.token.split('.')[1]));
-                        localStorage.setItem('bm_role', payload.rol);
-                        showUserUI(email, payload.rol, data.token);
-                    } catch(e) { showUserUI(email, '?', data.token); }
-                } else { alert('Error Login: ' + (data.error || 'Desconocido')); }
-            } catch (err) { console.error(err); alert('Error red'); }
+                    localStorage.setItem('bm_user', data.usuario.email);
+                    localStorage.setItem('bm_role', data.usuario.rol);
+                    checkAuth();
+                } else {
+                    alert('Error Login: ' + (data.error || res.statusText));
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Error de conexión con login.php. ¿Está el archivo en la misma carpeta?');
+            }
         }
 
         function logout() {
             localStorage.clear();
-            document.getElementById('login-form').classList.remove('hidden');
-            document.getElementById('user-info').classList.add('hidden');
+            checkAuth();
         }
 
-        function showUserUI(email, role, token) {
-            document.getElementById('login-form').classList.add('hidden');
-            document.getElementById('user-info').classList.remove('hidden');
-            document.getElementById('user-email-display').innerText = email;
-            document.getElementById('user-role-display').innerText = role;
-            document.getElementById('jwt-token').value = token;
-        }
-
-        // PETICIONES
+        // --- 2. LÓGICA DE UI Y URL ---
         function updateUI() {
             const method = document.getElementById('method').value;
-            document.getElementById('body-section').classList.toggle('hidden', method === 'GET' || method === 'DELETE');
+            const idValue = document.getElementById('resource-id').value;
+            
+            const isGet = method === 'GET';
+            const hasId = idValue.length > 0;
+            const needsBody = (method === 'POST' || method === 'PUT');
+
+            const showFilters = isGet && !hasId;
+            document.getElementById('get-filters').classList.toggle('hidden', !showFilters);
+            
+            const showDetallado = isGet && hasId;
+            document.getElementById('detallado-group').classList.toggle('hidden', !showDetallado);
+
+            document.getElementById('body-section').classList.toggle('hidden', !needsBody);
+            
+            const btn = document.getElementById('send-btn');
+            btn.className = '';
+            if (method === 'DELETE') btn.classList.add('danger');
+            
+            buildUrl();
         }
 
-        async function sendRequest() {
+        function fillTemplate() {
+            const template = {
+                "nombre": "Hamburguesa Tester " + Math.floor(Math.random()*100),
+                "descripcion": "Descripción generada para pruebas.",
+                "precio": (Math.random() * 15 + 5).toFixed(2),
+                "imagen": "default.jpg",
+                "id_categoria": 1
+            };
+            document.getElementById('json-body').value = JSON.stringify(template, null, 4);
+        }
+
+        function quickAction(action) {
+            if (action === 'list') {
+                document.getElementById('method').value = 'GET';
+                document.getElementById('base-url').value = 'platos.php';
+                document.getElementById('resource-id').value = '';
+                updateUI();
+                setTimeout(() => sendRequest(), 100);
+            } else if (action === 'count') {
+                document.getElementById('method').value = 'GET';
+                document.getElementById('base-url').value = 'platos.php';
+                document.getElementById('resource-id').value = '';
+                updateUI();
+                setTimeout(() => {
+                    document.getElementById('url-preview').innerText = 'GET platos.php?count=1';
+                    sendRequest();
+                }, 100);
+            } else if (action === 'me') {
+                document.getElementById('method').value = 'GET';
+                document.getElementById('base-url').value = 'me.php';
+                document.getElementById('resource-id').value = '';
+                updateUI();
+                setTimeout(() => {
+                    document.getElementById('url-preview').innerText = 'GET me.php';
+                    sendRequest();
+                }, 100);
+            }
+        }
+
+        function buildUrl() {
+            const base = document.getElementById('base-url').value;
             const method = document.getElementById('method').value;
             const id = document.getElementById('resource-id').value;
-            const jsonBody = document.getElementById('json-body').value;
-            const token = localStorage.getItem('bm_token');
-            const responseArea = document.getElementById('response-area');
             
-            let url = document.getElementById('url').value; 
+            let url = base;
+            let params = [];
+
             if (id) {
-                url += (url.includes('?') ? '&' : '?') + `id=${id}`;
+                params.push(`id=${id}`);
+                if (method === 'GET' && document.getElementById('detallado-check').checked) {
+                    params.push('detallado=1');
+                }
+            } 
+            else if (method === 'GET') {
+                const page = document.getElementById('page').value;
+                const limit = document.getElementById('limit').value;
+                const search = document.getElementById('search').value;
+                const order = document.getElementById('order').value;
+                const dir = document.getElementById('dir').value;
+
+                if(page) params.push(`page=${page}`);
+                if(limit) params.push(`limit=${limit}`);
+                if(search) params.push(`search=${encodeURIComponent(search)}`);
+                if(order) params.push(`order=${order}`);
+                if(dir) params.push(`dir=${dir}`);
             }
 
-            const options = { method: method, headers: { 'Content-Type': 'application/json' } };
-            if (token) options.headers['Authorization'] = `Bearer ${token}`;
-            if (method === 'POST' || method === 'PUT') options.body = jsonBody;
+            if (params.length > 0) {
+                url += '?' + params.join('&');
+            }
 
-            responseArea.innerText = "Cargando...";
+            document.getElementById('url-preview').innerText = method + ' ' + url;
+            
+            // Refresco de visibilidad de filtros al escribir ID
+            const isGet = method === 'GET';
+            document.getElementById('get-filters').classList.toggle('hidden', !(isGet && !id));
+            document.getElementById('detallado-group').classList.toggle('hidden', !(isGet && id));
+            
+            return url;
+        }
+
+        // --- 3. ENVIAR PETICIÓN ---
+        async function sendRequest() {
+            const method = document.getElementById('method').value;
+            // Quitamos el verbo HTTP del preview para obtener solo la URL
+            const urlFull = document.getElementById('url-preview').innerText.replace(method + ' ', ''); 
+            const token = localStorage.getItem('bm_token');
+            const jsonBody = document.getElementById('json-body').value;
+            const responseArea = document.getElementById('response-area');
+            const statusBadge = document.getElementById('status-badge');
+
+            responseArea.innerText = "⏳ Cargando...";
+            statusBadge.innerText = "Status: ...";
+            statusBadge.style.background = "#eee";
+
+            const options = {
+                method: method,
+                headers: { 'Content-Type': 'application/json' }
+            };
+
+            if (token) options.headers['Authorization'] = `Bearer ${token}`;
+
+            if ((method === 'POST' || method === 'PUT') && jsonBody) {
+                try {
+                    JSON.parse(jsonBody);
+                    options.body = jsonBody;
+                } catch (e) {
+                    alert("El JSON no es válido");
+                    return;
+                }
+            }
+
+            const startTime = performance.now();
+
             try {
-                const res = await fetch(url, options);
+                const res = await fetch(urlFull, options);
+                const endTime = performance.now();
+                
+                document.getElementById('time-badge').innerText = Math.round(endTime - startTime) + ' ms';
+
                 const status = res.status;
-                document.getElementById('http-status').innerText = `${status} ${res.statusText}`;
+                statusBadge.innerText = `Status: ${status} ${res.statusText}`;
                 
-                let data;
-                try { data = await res.json(); } catch { data = { error: "No es JSON válido" }; }
-                
-                responseArea.innerText = JSON.stringify(data, null, 4);
-                responseArea.className = (status >= 200 && status < 300) ? "" : "error";
+                if (status >= 200 && status < 300) {
+                    statusBadge.style.background = "#dcfce7"; statusBadge.style.color = "#166534";
+                    responseArea.style.color = "#10b981"; 
+                } else if (status >= 400 && status < 500) {
+                    statusBadge.style.background = "#ffedd5"; statusBadge.style.color = "#9a3412";
+                    responseArea.style.color = "#fbbf24";
+                } else {
+                    statusBadge.style.background = "#fee2e2"; statusBadge.style.color = "#991b1b";
+                    responseArea.style.color = "#ef4444";
+                }
+
+                try {
+                    const data = await res.json();
+                    responseArea.innerText = JSON.stringify(data, null, 4);
+                } catch (err) {
+                    const text = await res.text();
+                    responseArea.innerText = text || "(Respuesta vacía)";
+                }
+
             } catch (err) {
-                responseArea.innerText = "Error de conexión: " + err;
+                responseArea.innerText = "❌ Error de Red: " + err + "\n\n(Asegúrate de que 'platos.php' existe en la misma carpeta que este HTML)";
+                responseArea.style.color = "#ef4444";
             }
         }
 
         window.onload = () => {
-            if (localStorage.getItem('bm_token')) {
-                showUserUI(localStorage.getItem('bm_user'), localStorage.getItem('bm_role'), localStorage.getItem('bm_token'));
-            }
-            updateUI();
+            checkAuth();
+            buildUrl();
         };
     </script>
 </body>
