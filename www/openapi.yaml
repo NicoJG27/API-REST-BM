@@ -1,0 +1,217 @@
+openapi: 3.0.0
+info:
+  title: API Burguer Marina
+  description: Documentación oficial de la API REST para gestión de pedidos.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api
+    description: Servidor Docker Local
+
+# ---------------------------------------------------------
+# CONFIGURACIÓN DE SEGURIDAD (JWT)
+# ---------------------------------------------------------
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+# ---------------------------------------------------------
+# RUTAS (ENDPOINTS)
+# ---------------------------------------------------------
+paths:
+  # === LOGIN ===
+  /login:
+    post:
+      summary: Iniciar sesión (Obtener Token)
+      tags:
+        - Autenticación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  example: admin@test.com
+                password:
+                  type: string
+                  example: "1234"
+      responses:
+        '200':
+          description: Login exitoso. Devuelve el token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  token:
+                    type: string
+                    description: Copia este token para usar en los candados.
+                  datos:
+                    type: object
+        '401':
+          description: Credenciales incorrectas
+
+  # === LISTAR PLATOS (PÚBLICO) ===
+  /platos:
+    get:
+      summary: Obtener lista de platos
+      tags:
+        - Platos
+      security: [] # Público
+      parameters:
+        - name: page
+          in: query
+          description: Número de página
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Platos por página
+          schema:
+            type: integer
+            default: 10
+        - name: search
+          in: query
+          description: Filtrar por nombre
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: Campo por el que ordenar (ej. precio)
+          schema:
+            type: string
+            default: id_plato
+        - name: dir
+          in: query
+          description: Dirección (ASC o DESC)
+          schema:
+            type: string
+            default: ASC
+      responses:
+        '200':
+          description: Lista recuperada
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id_plato:
+                      type: integer
+                    nombre:
+                      type: string
+                    precio:
+                      type: number
+                    descripcion:
+                      type: string
+
+    # === CREAR PLATO (PROTEGIDO) ===
+    post:
+      summary: Crear un nuevo plato
+      tags:
+        - Platos
+      security:
+        - bearerAuth: [] # Requiere Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nombre
+                - precio
+              properties:
+                nombre:
+                  type: string
+                  example: "Hamburguesa Doble"
+                precio:
+                  type: number
+                  format: float
+                  example: 12.50
+                descripcion:
+                  type: string
+                  example: "Doble carne con queso cheddar"
+                id_categoria:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: Plato creado con éxito
+        '401':
+          description: No autorizado (Falta Token)
+        '403':
+          description: Prohibido (No tienes rol suficiente)
+
+  # === OPERACIONES CON ID (VER, EDITAR, BORRAR) ===
+  /platos/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: ID del plato
+    
+    # Ver detalle (Público)
+    get:
+      summary: Ver detalle de un plato
+      tags:
+        - Platos
+      security: []
+      parameters:
+        - name: detallado
+          in: query
+          description: Si se envía 1, muestra info extra (si existe lógica)
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Datos del plato
+        '404':
+          description: Plato no encontrado
+
+    # Editar (Admin)
+    put:
+      summary: Actualizar un plato existente
+      tags:
+        - Platos
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                precio:
+                  type: number
+      responses:
+        '200':
+          description: Plato actualizado
+    
+    # Borrar (Admin)
+    delete:
+      summary: Eliminar un plato
+      tags:
+        - Platos
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Plato eliminado correctamente

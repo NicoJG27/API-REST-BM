@@ -1,4 +1,10 @@
 <?php
+// www/api/platos.php
+
+// --- AQUI SIGUE TU CÓDIGO NORMAL ---
+header("Content-Type: application/json; charset=utf-8");
+// ... headers, requires, etc ...
+require_once __DIR__ . "/../vendor/autoload.php";
 header("Content-Type: application/json; charset=utf-8");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Authorization, Content-Type");
@@ -18,6 +24,7 @@ $controlador = new PlatosControlador($modelo);
 $metodo = $_SERVER['REQUEST_METHOD'];
 $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 $esDetallado = isset($_GET['detallado']);
+$esConteo = isset($_GET['count']);
 
 switch ($metodo) {
     case 'GET':
@@ -28,6 +35,12 @@ switch ($metodo) {
         $orden = isset($_GET['order']) ? $_GET['order'] : 'id_plato';
         $dir = isset($_GET['dir']) ? $_GET['dir'] : 'ASC';
         
+        // /api/platos/count -> estadísticas básicas
+        if ($esConteo && !$id) {
+            echo json_encode($controlador->estadisticas());
+            break;
+        }
+
         if ($id) {
             if ($esDetallado) {
                 echo json_encode($controlador->verDetallado($id));

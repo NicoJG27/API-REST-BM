@@ -6,8 +6,14 @@ RewriteRule ^login/?$ login.php [L,QSA]
 # Lista de platos
 RewriteRule ^platos/?$ platos.php [L,QSA]
 
+# Conteo de platos (endpoint /api/platos/count)
+RewriteRule ^platos/count/?$ platos.php?count=1 [L,QSA]
+
 # Detalle de un platos por id
 RewriteRule ^platos/([0-9]+)/?$ platos.php?id=$1 [L,QSA]
 
 # Detalle de un plato detallado
 RewriteRule ^platos/([0-9]+)/detallado/?$ platos.php?id=$1&detallado=1 [L,QSA]
+
+# Mi perfil (JWT)
+RewriteRule ^me/?$ me.php [L,QSA]

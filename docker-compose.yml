@@ -16,10 +16,7 @@ services:
     container_name: db-BM
     environment:
       - MARIADB_ROOT_PASSWORD=root
-      - MARIADB_DATABASE=burguer_marina
-      - MARIADB_USER=root
-      - MARIADB_PASSWORD=root
-    volumes:
+      - MARIADB_DATABASE=burguermarina
       - db_data:/var/lib/mysql
     ports:
       - "3307:3306"
