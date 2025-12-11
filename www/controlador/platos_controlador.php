@@ -150,4 +150,12 @@ class PlatosControlador
         http_response_code(200);
         return $plato;
     }
+
+    //total de platos
+    public function estadisticas(): array
+    {
+        $total = $this->modelo->contarTodos();
+        http_response_code(200);
+        return ['total' => (int)$total];
+    }
 }

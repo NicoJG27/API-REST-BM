@@ -174,4 +174,15 @@ class PlatosModelo
 
         return $plato;
     }
+
+    // Contar todos los platos
+    public function contarTodos(): int
+    {
+        $sql = "SELECT COUNT(*) AS total FROM Platos";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        $total = $stmt->fetchColumn();
+
+        return (int) $total;
+    }
 }
