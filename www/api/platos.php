@@ -1,33 +1,6 @@
 <?php
 // www/api/platos.php
 
-/**
- * @OA\Info(
- * title="API Burguer Marina", 
- * version="1.0.0",
- * description="Documentación de la API"
- * )
- * @OA\Server(url="http://localhost:8080/api")
- * @OA\SecurityScheme(
- * securityScheme="bearerAuth",
- * type="http",
- * scheme="bearer",
- * bearerFormat="JWT"
- * )
- */
-
-/**
- * @OA\Get(
- * path="/platos",
- * tags={"Platos"},
- * summary="Listar platos",
- * @OA\Response(response="200", description="Lista de platos")
- * )
- */
-
-// ESTA LÍNEA ES CRÍTICA:
-use OpenApi\Annotations as OA;
-
 // --- AQUI SIGUE TU CÓDIGO NORMAL ---
 header("Content-Type: application/json; charset=utf-8");
 // ... headers, requires, etc ...

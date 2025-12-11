@@ -48,7 +48,7 @@ try {
     $db = Database::getConnection();
 
     // 4. Buscar usuario
-    $sql = "SELECT id_usuario, nombre, email, password, rol FROM suarios WHERE email = :email LIMIT 1";
+    $sql = "SELECT id_usuario, nombre, email, password, rol FROM Usuarios WHERE email = :email LIMIT 1";
     $stmt = $db->prepare($sql);
     $stmt->bindParam(":email", $email);
     $stmt->execute();
