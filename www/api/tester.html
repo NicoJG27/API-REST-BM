@@ -80,6 +80,12 @@
                 <label>Ruta Archivo API</label>
                 <input type="text" id="base-url" value="platos.php" oninput="buildUrl()">
 
+                <label style="margin-top:15px">Acciones Rápidas</label>
+                <div class="row" style="gap:5px">
+                    <button class="secondary" style="width:auto; flex:1; padding:8px; margin:0; font-size:0.8em" onclick="quickAction('list')">Listar</button>
+                    <button class="secondary" style="width:auto; flex:1; padding:8px; margin:0; font-size:0.8em" onclick="quickAction('count')">Conteo</button>
+                </div>
+
                 <div id="id-group">
                     <label>ID del Plato <small>(Opcional en GET)</small></label>
                     <input type="number" id="resource-id" placeholder="Ej: 1" oninput="buildUrl()">
@@ -238,6 +244,25 @@
                 "id_categoria": 1
             };
             document.getElementById('json-body').value = JSON.stringify(template, null, 4);
+        }
+
+        function quickAction(action) {
+            if (action === 'list') {
+                document.getElementById('method').value = 'GET';
+                document.getElementById('base-url').value = 'platos.php';
+                document.getElementById('resource-id').value = '';
+                updateUI();
+                setTimeout(() => sendRequest(), 100);
+            } else if (action === 'count') {
+                document.getElementById('method').value = 'GET';
+                document.getElementById('base-url').value = 'platos.php';
+                document.getElementById('resource-id').value = '';
+                updateUI();
+                setTimeout(() => {
+                    document.getElementById('url-preview').innerText = 'GET platos.php?count=1';
+                    sendRequest();
+                }, 100);
+            }
         }
 
         function buildUrl() {

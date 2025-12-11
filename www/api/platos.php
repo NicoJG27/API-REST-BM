@@ -18,6 +18,7 @@ $controlador = new PlatosControlador($modelo);
 $metodo = $_SERVER['REQUEST_METHOD'];
 $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 $esDetallado = isset($_GET['detallado']);
+$esConteo = isset($_GET['count']);
 
 switch ($metodo) {
     case 'GET':
@@ -28,6 +29,12 @@ switch ($metodo) {
         $orden = isset($_GET['order']) ? $_GET['order'] : 'id_plato';
         $dir = isset($_GET['dir']) ? $_GET['dir'] : 'ASC';
         
+        // /api/platos/count -> estadísticas básicas
+        if ($esConteo && !$id) {
+            echo json_encode($controlador->estadisticas());
+            break;
+        }
+
         if ($id) {
             if ($esDetallado) {
                 echo json_encode($controlador->verDetallado($id));
