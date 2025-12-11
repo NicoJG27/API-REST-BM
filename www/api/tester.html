@@ -84,6 +84,7 @@
                 <div class="row" style="gap:5px">
                     <button class="secondary" style="width:auto; flex:1; padding:8px; margin:0; font-size:0.8em" onclick="quickAction('list')">Listar</button>
                     <button class="secondary" style="width:auto; flex:1; padding:8px; margin:0; font-size:0.8em" onclick="quickAction('count')">Conteo</button>
+                    <button class="secondary" style="width:auto; flex:1; padding:8px; margin:0; font-size:0.8em" onclick="quickAction('me')">Mi perfil</button>
                 </div>
 
                 <div id="id-group">
@@ -260,6 +261,15 @@
                 updateUI();
                 setTimeout(() => {
                     document.getElementById('url-preview').innerText = 'GET platos.php?count=1';
+                    sendRequest();
+                }, 100);
+            } else if (action === 'me') {
+                document.getElementById('method').value = 'GET';
+                document.getElementById('base-url').value = 'me.php';
+                document.getElementById('resource-id').value = '';
+                updateUI();
+                setTimeout(() => {
+                    document.getElementById('url-preview').innerText = 'GET me.php';
                     sendRequest();
                 }, 100);
             }
