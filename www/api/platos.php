@@ -1,4 +1,10 @@
 <?php
+// www/api/platos.php
+
+// --- AQUI SIGUE TU CÓDIGO NORMAL ---
+header("Content-Type: application/json; charset=utf-8");
+// ... headers, requires, etc ...
+require_once __DIR__ . "/../vendor/autoload.php";
 header("Content-Type: application/json; charset=utf-8");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Authorization, Content-Type");
