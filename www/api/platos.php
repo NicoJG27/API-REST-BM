@@ -24,7 +24,7 @@ $controlador = new PlatosControlador($modelo);
 
 $metodo = $_SERVER['REQUEST_METHOD'];
 $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
-$esDetallado = isset($_GET['include']) && $_GET['include'] === 'categorias';
+$esDetallado = isset($_GET['detallado']) || (isset($_GET['include']) && $_GET['include'] === 'categorias');
 $esConteo = isset($_GET['count']);
 
 switch ($metodo) {
