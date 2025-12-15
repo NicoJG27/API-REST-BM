@@ -15,6 +15,7 @@ require_once __DIR__ . "/../database.php";
 require_once __DIR__ . "/../modelo/platos_modelo.php";
 require_once __DIR__ . "/../controlador/platos_controlador.php";
 require_once __DIR__ . "/auth.php";
+require_once __DIR__ . "/logger.php";
 
 // Inicializamos
 $db = Database::getConnection();
@@ -23,7 +24,7 @@ $controlador = new PlatosControlador($modelo);
 
 $metodo = $_SERVER['REQUEST_METHOD'];
 $id = isset($_GET['id']) ? (int) $_GET['id'] : null;
-$esDetallado = isset($_GET['detallado']);
+$esDetallado = isset($_GET['include']) && $_GET['include'] === 'categorias';
 $esConteo = isset($_GET['count']);
 
 switch ($metodo) {
@@ -64,7 +65,7 @@ switch ($metodo) {
         }
 
         $datos = json_decode(file_get_contents("php://input"), true) ?? [];
-        echo json_encode($controlador->crear($datos));
+        echo json_encode($controlador->crear($datos, $user->id));
         break;
 
     case 'PUT':
@@ -78,7 +79,7 @@ switch ($metodo) {
         }
 
         $datos = json_decode(file_get_contents("php://input"), true) ?? [];
-        echo json_encode($controlador->actualizar($id, $datos));
+        echo json_encode($controlador->actualizar($id, $datos, $user->id));
         break;
 
     case 'DELETE':
@@ -91,7 +92,7 @@ switch ($metodo) {
             exit;
         }
 
-        echo json_encode($controlador->eliminar($id));
+        echo json_encode($controlador->eliminar($id, $user->id));
         break;
 
     case 'OPTIONS':

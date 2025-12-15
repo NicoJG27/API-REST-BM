@@ -92,8 +92,8 @@
                     <input type="number" id="resource-id" placeholder="Ej: 1" oninput="buildUrl()">
                     
                     <div id="detallado-group" class="hidden" style="margin-top:5px">
-                         <input type="checkbox" id="detallado-check" onchange="buildUrl()" style="width:auto"> 
-                         <label style="display:inline">Ver Detallado</label>
+                         <input type="checkbox" id="include-check" onchange="buildUrl()" style="width:auto"> 
+                         <label style="display:inline">Incluir categoría</label>
                     </div>
                 </div>
 
@@ -285,8 +285,8 @@
 
             if (id) {
                 params.push(`id=${id}`);
-                if (method === 'GET' && document.getElementById('detallado-check').checked) {
-                    params.push('detallado=1');
+                if (method === 'GET' && document.getElementById('include-check').checked) {
+                    params.push('include=categorias');
                 }
             } 
             else if (method === 'GET') {

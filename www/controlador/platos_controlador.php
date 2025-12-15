@@ -17,12 +17,13 @@ class PlatosControlador
     }
 
     // POST /api/platos
-    public function crear(array $data): array
+    public function crear(array $data, ?int $userId = null): array
     {
         // Validar campos obligatorios (Nombre, Precio y Categoría son vitales)
         if (empty($data["nombre"]) || empty($data["precio"]) || empty($data["id_categoria"])) {
             // Error del cliente → 400 Bad Request
             http_response_code(400);
+            logApi('WARN', 'platos', "POST fallido: datos incompletos", $userId);
             return ["error" => "Nombre, precio e id_categoria son obligatorios"];
         }
 
@@ -34,26 +35,30 @@ class PlatosControlador
         if ($this->modelo->insertar($data["nombre"], $descripcion, $data["precio"], $imagen, $data["id_categoria"])) {
             // Recurso creado → 201 Created
             http_response_code(201);
+            logApi('INFO', 'platos', "POST: plato '{$data["nombre"]}' creado", $userId);
             return ["mensaje" => "Plato creado correctamente"];
         }
 
         // Algo ha fallado en el servidor → 500 Internal Server Error
         http_response_code(500);
+        logApi('ERROR', 'platos', "POST: error al insertar plato", $userId);
         return ["error" => "No se pudo insertar el plato"];
     }
 
     // PUT /api/platos?id=5
-    public function actualizar(?int $id, array $data): array
+    public function actualizar(?int $id, array $data, ?int $userId = null): array
     {
         // Validar que se ha pasado un id
         if ($id === null || $id <= 0) {
             http_response_code(400); // Petición incorrecta
+            logApi('WARN', 'platos', "PUT fallido: id inválido", $userId);
             return ["error" => "Debe indicar un id de plato válido"];
         }
 
         // Validar datos mínimos
         if (empty($data["nombre"]) || empty($data["precio"]) || empty($data["id_categoria"])) {
             http_response_code(400); // Datos incompletos
+            logApi('WARN', 'platos', "PUT $id fallido: datos incompletos", $userId);
             return ["error" => "Nombre, precio e id_categoria son obligatorios para actualizar"];
         }
 
@@ -66,26 +71,30 @@ class PlatosControlador
         if ($actualizado === true) {
             // Actualización correcta → 200 OK
             http_response_code(200);
+            logApi('INFO', 'platos', "PUT $id: actualizado", $userId);
             return ["mensaje" => "Plato actualizado correctamente"];
         }
 
         if ($actualizado === null) {
             // No existe ese id
             http_response_code(404); // No encontrado
+            logApi('WARN', 'platos', "PUT $id: no encontrado", $userId);
             return ["error" => "Plato no encontrado"];
         }
 
         // Error interno
         http_response_code(500);
+        logApi('ERROR', 'platos', "PUT $id: error al actualizar", $userId);
         return ["error" => "No se pudo actualizar el plato"];
     }
 
     // DELETE /api/platos?id=5
-    public function eliminar(?int $id): array
+    public function eliminar(?int $id, ?int $userId = null): array
     {
         // Validar id
         if ($id === null || $id <= 0) {
             http_response_code(400); // Petición incorrecta
+            logApi('WARN', 'platos', "DELETE fallido: id inválido", $userId);
             return ["error" => "Debe indicar un id de plato válido"];
         }
 
@@ -95,17 +104,20 @@ class PlatosControlador
         if ($eliminado === true) {
             // Eliminado correctamente
             http_response_code(200);
+            logApi('INFO', 'platos', "DELETE $id: eliminado", $userId);
             return ["mensaje" => "Plato eliminado correctamente"];
         }
 
         if ($eliminado === null) {
             // Plato no encontrado
             http_response_code(404);
+            logApi('WARN', 'platos', "DELETE $id: no encontrado", $userId);
             return ["error" => "Plato no encontrado"];
         }
 
         // Error interno
         http_response_code(500);
+        logApi('ERROR', 'platos', "DELETE $id: error al eliminar", $userId);
         return ["error" => "No se pudo eliminar el plato"];
     }
 

@@ -21,7 +21,8 @@ header("Access-Control-Allow-Headers: Content-Type");
 
 require __DIR__ . "/../vendor/autoload.php";
 require __DIR__ . "/../config.php";
-require __DIR__ . "/../database.php"; 
+require __DIR__ . "/../database.php";
+require __DIR__ . "/logger.php";
 
 use Firebase\JWT\JWT;
 
@@ -57,6 +58,7 @@ try {
     // 5. Verificar credenciales (Hash)
     if (!$usuario || !password_verify($password, $usuario['password'])) {
         http_response_code(401);
+        logApi('WARN', 'login', "Intento fallido: {$email}");
         echo json_encode(["error" => "Credenciales incorrectas"]);
         exit;
     }
@@ -74,6 +76,7 @@ try {
     $token = JWT::encode($payload, JWT_SECRET, 'HS256');
 
     http_response_code(200);
+    logApi('INFO', 'login', "Login exitoso", $usuario['id_usuario']);
     echo json_encode([
         "mensaje" => "Login exitoso",
         "token"   => $token,
